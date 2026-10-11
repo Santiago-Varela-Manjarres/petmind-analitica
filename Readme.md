@@ -191,8 +191,8 @@ Cambios propuestos, en orden:
 Git Flow:
 
 - `main`: rama estable.
-- `dev`: rama de integración del equipo.
-- `feature/*`: una rama por funcionalidad, con Pull Request hacia `dev`.
+- `develop`: rama de integración del equipo.
+- `feature/*`: una rama por funcionalidad, con Pull Request hacia `develop`.
 - `release/analisis-v1`: preparación de la entrega.
 
 ## Integrantes

@@ -1,5 +1,12 @@
 import pandas as pd
 
+# Columnas que nunca deben llegar al análisis ni imprimirse (datos personales sensibles).
+COLUMNAS_SENSIBLES = ["password"]
+
+# Columnas con fechas ISO ("2026-02-27T10:00:00.000Z"). Se convierten a fecha real antes de
+# estandarizar el texto; si no, quedaban en minúsculas ("2026-02-27t10:00:00.000z").
+COLUMNAS_FECHA = ["creation_date", "last_update"]
+
 
 def manejar_valores_nulos(df: pd.DataFrame) -> pd.DataFrame:
     """Convierte textos vacíos en nulos y elimina filas sin ningún dato."""
@@ -11,6 +18,20 @@ def manejar_valores_nulos(df: pd.DataFrame) -> pd.DataFrame:
     # Solo elimina registros completamente vacíos.
     df_limpio = df_limpio.dropna(how="all")
 
+    return df_limpio
+
+
+def quitar_columnas_sensibles(df: pd.DataFrame) -> pd.DataFrame:
+    """Elimina columnas como la contraseña: no sirven para el análisis y no deben imprimirse."""
+    return df.drop(columns=[columna for columna in COLUMNAS_SENSIBLES if columna in df.columns])
+
+
+def convertir_fechas(df: pd.DataFrame) -> pd.DataFrame:
+    """Convierte las columnas de fecha a datetime. Las fechas inválidas quedan como nulas (NaT)."""
+    df_limpio = df.copy()
+    for columna in COLUMNAS_FECHA:
+        if columna in df_limpio.columns:
+            df_limpio[columna] = pd.to_datetime(df_limpio[columna], errors="coerce", utc=True)
     return df_limpio
 
 
@@ -122,7 +143,9 @@ def limpiar_datos(datos: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
 
         cantidad_inicial = len(df)
 
-        df_limpio = manejar_valores_nulos(df)
+        df_limpio = quitar_columnas_sensibles(df)
+        df_limpio = manejar_valores_nulos(df_limpio)
+        df_limpio = convertir_fechas(df_limpio)
         df_limpio = estandarizar_texto(df_limpio)
         df_limpio = limpieza_especifica_petmind(nombre, df_limpio)
         df_limpio = df_limpio.drop_duplicates()

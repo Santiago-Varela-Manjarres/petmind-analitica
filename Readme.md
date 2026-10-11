@@ -34,6 +34,8 @@ Los datos de MockAPI traen errores a propósito (ids negativos, ciudades con sí
 - Extracción de datos desde una API y guardado en `Data/raw/` (`user.json`, `favorite.json`).
 - Carga de los JSON en DataFrames de Pandas.
 - Limpieza:
+  - Se elimina la columna `password`: no sirve para el análisis y nunca debe imprimirse.
+  - Las fechas (`creation_date`, `last_update`) se convierten a fecha real; las inválidas quedan nulas.
   - Textos vacíos o con solo espacios pasan a nulos; se eliminan filas totalmente vacías.
   - Textos en minúsculas y sin espacios repetidos.
   - Ids inválidos (texto, negativos, decimales, booleanos) pasan a nulos.
@@ -57,10 +59,13 @@ petmind-analitica/
 ├── src/
 │   ├── extract/
 │   │   └── fetch_api.py        Opción 1: descarga y guarda los JSON
-│   └── transform/
-│       ├── cargar_datos.py     Opción 2: JSON → DataFrames
-│       ├── limpiar_datos.py    Opción 3: limpieza
-│       └── combinar_datos.py   Opción 5: merge de favoritos y usuarios
+│   ├── transform/
+│   │   ├── cargar_datos.py     Opción 2: JSON → DataFrames
+│   │   ├── limpiar_datos.py    Opción 3: limpieza
+│   │   └── combinar_datos.py   Opción 5: merge de favoritos y usuarios
+│   └── analyze/
+│       └── consultas.py        Opción 6: preguntas sobre los datos
+├── tests/                      Pruebas automáticas (unittest)
 ├── analisis.py                 Menú principal
 ├── requirements.txt
 ├── .gitignore
@@ -123,8 +128,23 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6**. Cada opción avisa si fa
 2. **Cargar datos:** convierte los JSON en DataFrames.
 3. **Limpiar datos:** aplica la limpieza y muestra cuántos registros se eliminaron.
 4. **Imprimir datos limpios:** muestra cada DataFrame, los nulos por columna y el total de registros.
-5. **Mergear datos:** une favoritos con usuarios por `id_user`.
+5. **Mergear datos:** une favoritos con usuarios por `id_user`. Los ids quedan como `id_favorito` e `id_usuario`.
 6. **Consultas:** responde las tres preguntas de la sección Funcionalidades.
+
+## Pruebas automáticas
+
+Usan `unittest`, que viene con Python, así que no hay que instalar nada más:
+
+```bash
+python -m unittest -v
+```
+
+Cubren la limpieza (ids inválidos, duplicados, ciudades, fechas y contraseñas) y las consultas, incluido el caso sin datos.
+
+## Manejo de errores del menú
+
+- Si la API no responde (opción 1) o faltan los archivos de `Data/raw` (opción 2), el programa avisa y sigue en el menú.
+- `Ctrl+C` o `Ctrl+D` cierran el programa. Antes un `except:` vacío los atrapaba y el menú quedaba en un ciclo infinito.
 
 ## Conexión con el backend
 
